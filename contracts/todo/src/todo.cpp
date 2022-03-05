@@ -2,28 +2,28 @@
 
 //======================== config actions ========================
 
-ACTION todo::init(string contract_name, string contract_version, name initial_admin)
-{
-    //authenticate
-    require_auth(get_self());
+// ACTION todo::init(string contract_name, string contract_version, name initial_admin)
+// {
+//     //authenticate
+//     // require_auth(get_self());
 
-    //open config table
-    config_table configs(get_self(), get_self().value);
+//     //open config table
+//     config_table configs(get_self(), get_self().value);
 
-    //validate
-    check(!configs.exists(), "config already initialized");
-    check(is_account(initial_admin), "initial admin account doesn't exist");
+//     //validate
+//     check(!configs.exists(), "config already initialized");
+//     check(is_account(initial_admin), "initial admin account doesn't exist");
 
-    //initialize
-    config new_conf = {
-        contract_name, //contract_name
-        contract_version, //contract_version
-        initial_admin //admin
-    };
+//     //initialize
+//     config new_conf = {
+//         contract_name, //contract_name
+//         contract_version, //contract_version
+//         initial_admin //admin
+//     };
 
-    //set new config
-    configs.set(new_conf, get_self());
-}
+//     //set new config
+//     configs.set(new_conf, get_self());
+// }
 
 ACTION todo::setversion(string new_version)
 {

@@ -22,7 +22,7 @@ CONTRACT todo : public contract
 
     //initialize the contract
     //auth: self
-    ACTION init(string contract_name, string contract_version, name initial_admin);
+    // ACTION init(string contract_name, string contract_version, name initial_admin);
 
     //set a new contract version
     //auth: admin

@@ -1,13 +1,12 @@
 /**
  * Arbitration Contract Implementation. See function bodies for further notes.
  * 
- * @author Craig Branscom, Peter Bue, Ed Silva, Kylan Hurt
+ * @author Craig Branscom, Peter Bue, Ed Silva
  * @copyright defined in telos/LICENSE.txt
  */
-// #include "../include/telos.decide.hpp"
-#include "../include/arb.hpp"
 
-// constructor?
+#include <eosio.arbitration/eosio.arbitration.hpp>
+
 arbitration::arbitration(name s, name code, datastream<const char *> ds) : eosio::contract(s, code, ds),
 																		   configs(_self, _self.value)
 {
@@ -19,15 +18,14 @@ arbitration::~arbitration()
 	configs.set(_config, get_self());
 }
 
-ACTION arbitration::setconfig(uint16_t max_elected_arbs, uint32_t election_duration,
+void arbitration::setconfig(uint16_t max_elected_arbs, uint32_t election_duration,
 							uint32_t election_start, uint32_t arbitrator_term_length, vector<int64_t> fees)
 {
 	// require_auth("eosio"_n);
-	check(max_elected_arbs > uint16_t(0), "Arbitrator must be greater than 0");
+	check(max_elected_arbs > uint16_t(0), "Arbitrators must be greater than 0");
 
 	_config = config {
-		// KYLAN CHANGE THIS
-		get_self(),		   		//publisher
+		name("testarb11112"),		   		//publisher
 		max_elected_arbs,  		//max_elected_arbs
 		election_duration, 		//election_duration
 		election_start,			//election_start
@@ -41,24 +39,26 @@ ACTION arbitration::setconfig(uint16_t max_elected_arbs, uint32_t election_durat
 
 #pragma region Arb_Elections
 
-// void arbitration::initelection()
-// {
-// 	// require_auth("eosio"_n);
-// 	check(!_config.auto_start_election, "Election is on auto start mode.");
+void arbitration::initelection()
+{
+	require_auth("eosio"_n);
+	check(!_config.auto_start_election, "Election is on auto start mode.");
 
-// 	ballots_table ballots(name("telos.decide"), name("telos.decide").value);
-// 	_config.current_ballot_id = ballots.available_primary_key();
-// 	_config.auto_start_election = true;
+	ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
+	_config.current_ballot_id = ballots.available_primary_key();
+	_config.auto_start_election = true;
 
-// 	arbitrators_table arbitrators(get_self(), get_self().value);
+	arbitrators_table arbitrators(get_self(), get_self().value);
 
-// 	uint8_t available_seats = 0;
-// 	if (has_available_seats(arbitrators, available_seats))
-// 	{
-// 		start_new_election(available_seats);
-// 	}
-// }
+	uint8_t available_seats = 0;
+	if (has_available_seats(arbitrators, available_seats))
+	{
+		start_new_election(available_seats);
+	}
+}
 
+// ACTION newballot(name ballot_name, name category, name publisher, symbol treasury_symbol, name voting_method, vector<name> initial_options);
+// ACTION newballot(name ballot_name (user-defined), name category ('leaderboard'), name publisher (eosio.arb), symbol treasury_symbol (4,VOTE), name voting_method ('1tokennvotes'), vector<name> initial_options (empty?));
 void arbitration::start_new_election(uint8_t available_seats)
 {
 	uint32_t begin_time = current_time_point().sec_since_epoch() + _config.election_start;
@@ -79,64 +79,6 @@ void arbitration::start_new_election(uint8_t available_seats)
 					  _config.current_ballot_id,
 					  available_seats))
 		.send();
-
-	print("\nNew election has started.");
-}
-
-void arbitration::draftelect()
-{
-	// create a ballot_name
-	name ballot_name = get_next_ballot_id();
-
-	// create draft ballot
-	action(permission_level{get_self(), name("active")}, name("telos.decide"), name("newballot"), make_tuple(
-		name(ballot_name), // ballot name
-		name("leaderboard"), // type
-		get_self(), // publisher
-		symbol("VOTE", 4), // treasury symbol
-		name("1tokennvote"), // voting method
-		vector<name>() // initial options
-	)).send();
-
-	// blindly toggling votestake
-	action(permission_level{get_self(), name("active")}, name("telos.decide"), name("togglebal"), make_tuple(
-		name(ballot_name), // ballot name
-		name("votestake") // setting name
-	)).send();
-
-	// adjust the ballot details
-	action(permission_level{get_self(), name("active")}, name("telos.decide"), name("editdetails"), make_tuple(
-		name(ballot_name), // ballot name
-		std::string("Telos Arbitrator Election"), // title
-		std::string(""), // description
-		std::string("") // content
-	)).send();	
-
-	// set the number of options a voter can vote for
-	action(permission_level{get_self(), name("active")}, name("telos.decide"), name("editminmax"), make_tuple(
-		name(ballot_name), // ballot name
-		uint8_t(1), // min
-		uint8_t(_config.max_elected_arbs) // max
-	)).send();
-
-	// uint32_t begin_time = current_time_point().sec_since_epoch() + _config.election_start;
-	// uint32_t end_time = begin_time + _config.election_duration;
-
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "regballot"_n,
-	// 	   make_tuple(get_self(),		 	// publisher
-	// 				  uint8_t(2),		 	// ballot_type (2 == leaderboard)
-	// 				  symbol("VOTE", 4), 	// voting_symbol
-	// 				  begin_time,		 	// begin_time
-	// 				  end_time,			 	// end_time
-	// 				  std::string("")		// info_url
-	// 				  ))
-	// 	.send();
-
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "setseats"_n,
-	// 	   make_tuple(get_self(),
-	// 				  _config.current_ballot_id,
-	// 				  available_seats))
-	// 	.send();
 
 	print("\nNew election has started.");
 }
@@ -169,217 +111,220 @@ void arbitration::regarb(name nominee, string credentials_link)
 		row.application_time = current_time_point().sec_since_epoch();
 	});
 }
-// remove candidate from election
+
 void arbitration::unregnominee(name nominee)
 {
-	// require_auth(nominee);
+	require_auth(nominee);
 
-	// nominees_table nominees(get_self(), get_self().value);
-	// auto nom_itr = nominees.find(nominee.value);
-	// check(nom_itr != nominees.end(), "Nominee isn't an applicant");
+	nominees_table nominees(get_self(), get_self().value);
+	auto nom_itr = nominees.find(nominee.value);
+	check(nom_itr != nominees.end(), "Nominee isn't an applicant");
 
-	// ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
-	// auto bal = ballots.get(_config.current_ballot_id, "Ballot doesn't exist");
+	ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
+	auto bal = ballots.get(_config.current_ballot_id, "Ballot doesn't exist");
 
-	// leaderboards_table leaderboards("eosio.trail"_n, "eosio.trail"_n.value);
-	// auto board = leaderboards.get(bal.reference_id, "Leaderboard doesn't exist");
+	leaderboards_table leaderboards("eosio.trail"_n, "eosio.trail"_n.value);
+	auto board = leaderboards.get(bal.reference_id, "Leaderboard doesn't exist");
 
-	// if (_config.auto_start_election)
-	// 	check(current_time_point().sec_since_epoch() < board.begin_time, "Cannot unregister while election is in progress");
+	if (_config.auto_start_election)
+		check(current_time_point().sec_since_epoch() < board.begin_time, "Cannot unregister while election is in progress");
 
-	// nominees.erase(nom_itr);
+	nominees.erase(nom_itr);
 }
-// add candidate to leaderboard?
+
 void arbitration::candaddlead(name nominee, string credentials_link)
 {
-	// require_auth(nominee);
-	// validate_ipfs_url(credentials_link);
-	// check(_config.auto_start_election, "there is no active election");
+	require_auth(nominee);
+	validate_ipfs_url(credentials_link);
+	check(_config.auto_start_election, "there is no active election");
 
-	// nominees_table nominees(get_self(), get_self().value);
-	// auto nom_itr = nominees.find(nominee.value);
-	// check(nom_itr != nominees.end(), "Nominee isn't an applicant. Use regarb action to register as a nominee");
+	nominees_table nominees(get_self(), get_self().value);
+	auto nom_itr = nominees.find(nominee.value);
+	check(nom_itr != nominees.end(), "Nominee isn't an applicant. Use regarb action to register as a nominee");
 
-	// ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
-	// auto bal = ballots.get(_config.current_ballot_id, "Ballot doesn't exist");
+	ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
+	auto bal = ballots.get(_config.current_ballot_id, "Ballot doesn't exist");
 
-	// leaderboards_table leaderboards("eosio.trail"_n, "eosio.trail"_n.value);
-	// auto board = leaderboards.get(bal.reference_id, "Leaderboard doesn't exist");
-	// check(board.status != CLOSED, "A new election hasn't started. Use initelection action to start a new election.");
+	leaderboards_table leaderboards("eosio.trail"_n, "eosio.trail"_n.value);
+	auto board = leaderboards.get(bal.reference_id, "Leaderboard doesn't exist");
+	check(board.status != CLOSED, "A new election hasn't started. Use initelection action to start a new election.");
 
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "addcandidate"_n,
-	// 	   make_tuple(get_self(),
-	// 				  _config.current_ballot_id,
-	// 				  nominee,
-	// 				  credentials_link))
-	// 	.send();
+	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "addcandidate"_n,
+		   make_tuple(get_self(),
+					  _config.current_ballot_id,
+					  nominee,
+					  credentials_link))
+		.send();
 
 	//print("\nArb Application: SUCCESS");
 }
+
 void arbitration::candrmvlead(name nominee)
 {
-	// require_auth(nominee);
+	require_auth(nominee);
 
-	// nominees_table nominees(get_self(), get_self().value);
-	// auto nom_itr = nominees.find(nominee.value);
-	// check(nom_itr != nominees.end(), "Nominee isn't an applicant.");
+	nominees_table nominees(get_self(), get_self().value);
+	auto nom_itr = nominees.find(nominee.value);
+	check(nom_itr != nominees.end(), "Nominee isn't an applicant.");
 
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "rmvcandidate"_n,
-	// 	   make_tuple(get_self(),
-	// 				  _config.current_ballot_id,
-	// 				  nominee))
-	// 	.send();
+	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "rmvcandidate"_n,
+		   make_tuple(get_self(),
+					  _config.current_ballot_id,
+					  nominee))
+		.send();
 
 	//print("\nCancel Application: SUCCESS");
 }
+
 void arbitration::endelection(name nominee) //NOTE: required eosio.arb@eosio.code
 {
-	// require_auth(nominee);
+	require_auth(nominee);
 
-	// ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
-	// auto bal = ballots.get(_config.current_ballot_id, "Ballot doesn't exist");
+	ballots_table ballots("eosio.trail"_n, "eosio.trail"_n.value);
+	auto bal = ballots.get(_config.current_ballot_id, "Ballot doesn't exist");
 
-	// leaderboards_table leaderboards("eosio.trail"_n, "eosio.trail"_n.value);
-	// auto board = leaderboards.get(bal.reference_id, "Leaderboard doesn't exist");
-	// check(current_time_point().sec_since_epoch() > board.end_time,
-	// 	  std::string("Election hasn't ended. Please check again after the election is over in " + std::to_string(uint32_t(board.end_time - current_time_point().sec_since_epoch()))
-	// 				  + " seconds")
-	// 		  .c_str());
+	leaderboards_table leaderboards("eosio.trail"_n, "eosio.trail"_n.value);
+	auto board = leaderboards.get(bal.reference_id, "Leaderboard doesn't exist");
+	check(current_time_point().sec_since_epoch() > board.end_time,
+		  std::string("Election hasn't ended. Please check again after the election is over in " + std::to_string(uint32_t(board.end_time - current_time_point().sec_since_epoch()))
+					  + " seconds")
+			  .c_str());
 
-	// //sort board candidates by votes
-	// auto board_candidates = board.candidates;
-	// sort(board_candidates.begin(), board_candidates.end(), [](const auto &c1, const auto &c2) { return c1.votes > c2.votes; });
+	//sort board candidates by votes
+	auto board_candidates = board.candidates;
+	sort(board_candidates.begin(), board_candidates.end(), [](const auto &c1, const auto &c2) { return c1.votes > c2.votes; });
 
-	// //resolve tie clonficts
-	// if (board_candidates.size() > board.available_seats)
-	// {
-	// 	auto first_cand_out = board_candidates[board.available_seats];
-	// 	board_candidates.resize(board.available_seats);
+	//resolve tie clonficts
+	if (board_candidates.size() > board.available_seats)
+	{
+		auto first_cand_out = board_candidates[board.available_seats];
+		board_candidates.resize(board.available_seats);
 
-	// 	//count candidates that are tied with first_cand_out
-	// 	uint8_t tied_cands = 0;
-	// 	for (int i = board_candidates.size() - 1; i >= 0; i--)
-	// 	{
-	// 		if (board_candidates[i].votes == first_cand_out.votes)
-	// 			tied_cands++;
-	// 	}
+		//count candidates that are tied with first_cand_out
+		uint8_t tied_cands = 0;
+		for (int i = board_candidates.size() - 1; i >= 0; i--)
+		{
+			if (board_candidates[i].votes == first_cand_out.votes)
+				tied_cands++;
+		}
 
-	// 	//remove all tied candidates
-	// 	if (tied_cands > 0)
-	// 		board_candidates.resize(board_candidates.size() - tied_cands);
-	// }
+		//remove all tied candidates
+		if (tied_cands > 0)
+			board_candidates.resize(board_candidates.size() - tied_cands);
+	}
 
-	// nominees_table nominees(get_self(), get_self().value);
-	// auto nom_itr = nominees.find(nominee.value);
-	// check(nom_itr != nominees.end(), "Nominee isn't an applicant.");
+	nominees_table nominees(get_self(), get_self().value);
+	auto nom_itr = nominees.find(nominee.value);
+	check(nom_itr != nominees.end(), "Nominee isn't an applicant.");
 
-	// arbitrators_table arbitrators(get_self(), get_self().value);
-	// std::vector<permission_level_weight> arbs_perms;
+	arbitrators_table arbitrators(get_self(), get_self().value);
+	std::vector<permission_level_weight> arbs_perms;
 
-	// //in case there are still candidates (not all tied)
-	// if (board_candidates.size() > 0)
-	// {
-	// 	for (int i = 0; i < board_candidates.size(); i++)
-	// 	{
-	// 		name cand_name = board_candidates[i].member;
-	// 		auto c = nominees.find(cand_name.value);
+	//in case there are still candidates (not all tied)
+	if (board_candidates.size() > 0)
+	{
+		for (int i = 0; i < board_candidates.size(); i++)
+		{
+			name cand_name = board_candidates[i].member;
+			auto c = nominees.find(cand_name.value);
 
-	// 		if (c != nominees.end())
-	// 		{
-	// 			auto cand_credential = board_candidates[i].info_link;
-	// 			auto cand_votes = board_candidates[i].votes;
-	// 			auto threshold_votes = asset(MIN_VOTE_THRESHOLD, cand_votes.symbol);
-	// 			print("\ncand_votes: ", cand_votes);
-	// 			print("\nthreshold_votes: ", threshold_votes);
-	// 			if (cand_votes < threshold_votes) {
-	// 				print("\nskipping candidate: ", cand_name, " because they have no votes");
-	// 				continue;
-	// 			}
+			if (c != nominees.end())
+			{
+				auto cand_credential = board_candidates[i].info_link;
+				auto cand_votes = board_candidates[i].votes;
+				auto threshold_votes = asset(MIN_VOTE_THRESHOLD, cand_votes.symbol);
+				print("\ncand_votes: ", cand_votes);
+				print("\nthreshold_votes: ", threshold_votes);
+				if (cand_votes < threshold_votes) {
+					print("\nskipping candidate: ", cand_name, " because they have no votes");
+					continue;
+				}
 					
 
-	// 			//remove candidates from candidates table / arbitration contract
-	// 			nominees.erase(c);
+				//remove candidates from candidates table / arbitration contract
+				nominees.erase(c);
 
-	// 			//add candidates to arbitration table / arbitration contract
-	// 			add_arbitrator(arbitrators, cand_name, cand_credential);
-	// 		}
-	// 		else
-	// 		{
-	// 			print("\ncandidate: ", cand_name, " was not found.");
-	// 		}
-	// 	}
+				//add candidates to arbitration table / arbitration contract
+				add_arbitrator(arbitrators, cand_name, cand_credential);
+			}
+			else
+			{
+				print("\ncandidate: ", cand_name, " was not found.");
+			}
+		}
 
-	// 	//add current arbitrators to permission list
-	// 	for (const auto &a : arbitrators)
-	// 	{
-	// 		if (a.arb_status != SEAT_EXPIRED || a.arb_status != REMOVED)
-	// 		{
-	// 			arbs_perms.emplace_back(permission_level_weight{permission_level{a.arb, "active"_n}, 1});
-	// 		}
-	// 	}
+		//add current arbitrators to permission list
+		for (const auto &a : arbitrators)
+		{
+			if (a.arb_status != SEAT_EXPIRED || a.arb_status != REMOVED)
+			{
+				arbs_perms.emplace_back(permission_level_weight{permission_level{a.arb, "active"_n}, 1});
+			}
+		}
 
-	// 	set_permissions(arbs_perms);
-	// }
+		set_permissions(arbs_perms);
+	}
 
-	// //close ballot action.
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "closeballot"_n,
-	// 	   make_tuple(
-	// 		   get_self(),
-	// 		   _config.current_ballot_id,
-	// 		   CLOSED))
-	// 	.send();
+	//close ballot action.
+	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "closeballot"_n,
+		   make_tuple(
+			   get_self(),
+			   _config.current_ballot_id,
+			   CLOSED))
+		.send();
 
-	// //start new election with remaining candidates
-	// //and new candidates that registered after past election had started.
-	// uint8_t available_seats = 0;
-	// auto remaining_candidates = distance(nominees.begin(), nominees.end());
-	// print("\nremaining_cands: ", remaining_candidates);
-	// if (remaining_candidates > 0 && has_available_seats(arbitrators, available_seats))
-	// {
-	// 	_config.current_ballot_id = ballots.available_primary_key();
+	//start new election with remaining candidates
+	//and new candidates that registered after past election had started.
+	uint8_t available_seats = 0;
+	auto remaining_candidates = distance(nominees.begin(), nominees.end());
+	print("\nremaining_cands: ", remaining_candidates);
+	if (remaining_candidates > 0 && has_available_seats(arbitrators, available_seats))
+	{
+		_config.current_ballot_id = ballots.available_primary_key();
 
-	// 	start_new_election(available_seats);
+		start_new_election(available_seats);
 
-	// 	for (const auto &c : nominees)
-	// 	{
-	// 		action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "addcandidate"_n,
-	// 			   make_tuple(
-	// 				   get_self(),
-	// 				   _config.current_ballot_id,
-	// 				   c,
-	// 				   c.credentials_link))
-	// 			.send();
-	// 	}
+		for (const auto &c : nominees)
+		{
+			action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "addcandidate"_n,
+				   make_tuple(
+					   get_self(),
+					   _config.current_ballot_id,
+					   c,
+					   c.credentials_link))
+				.send();
+		}
 
-	// 	//print("\nA new election has started.");
-	// }
-	// else
-	// {
-	// 	for (auto i = nominees.begin(); i != nominees.end(); i = nominees.erase(i))
-	// 		;
-	// 	_config.auto_start_election = false;
-	// 	//print("\nThere aren't enough seats available or candidates to start a new election.\nUse init action to start a new election.");
-	// }
+		//print("\nA new election has started.");
+	}
+	else
+	{
+		for (auto i = nominees.begin(); i != nominees.end(); i = nominees.erase(i))
+			;
+		_config.auto_start_election = false;
+		//print("\nThere aren't enough seats available or candidates to start a new election.\nUse init action to start a new election.");
+	}
 }
+
 #pragma endregion Arb_Elections
 
 #pragma region Case_Setup
-// void arbitration::withdrawfund(name owner) //NOTE: requires eosio.arb@eosio.code
-// {
-// 	require_auth(owner);
+void arbitration::withdraw(name owner) //NOTE: requires eosio.arb@eosio.code
+{
+	require_auth(owner);
 
-// 	accounts_table accounts(get_self(), owner.value);
-// 	const auto &bal = accounts.get(native_sym.code().raw(), "balance does not exist");
+	accounts_table accounts(get_self(), owner.value);
+	const auto &bal = accounts.get(native_sym.code().raw(), "balance does not exist");
 
-// 	action(permission_level{get_self(), "active"_n}, "eosio.token"_n, "transfer"_n,
-// 		   make_tuple(get_self(),
-// 					  owner,
-// 					  bal.balance,
-// 					  std::string("eosio.arb withdrawfund")))
-// 		.send();
+	action(permission_level{get_self(), "active"_n}, "eosio.token"_n, "transfer"_n,
+		   make_tuple(get_self(),
+					  owner,
+					  bal.balance,
+					  std::string("eosio.arb withdrawal")))
+		.send();
 
-// 	accounts.erase(bal);
-// }
+	accounts.erase(bal);
+}
 
 //QUESTION: Does cleos/teclos still not support optional serialization?
 void arbitration::filecase(name claimant, string claim_link, vector<uint8_t> lang_codes, std::optional<name> respondant)
@@ -798,53 +743,53 @@ void arbitration::deletecase(uint64_t case_id)
 
 #pragma region BP_Multisig_Actions
 
-	void arbitration::dismissarb(name arb, bool remove_from_cases)
-	{
-		require_auth("eosio"_n);
-		check(is_account(arb), "arb must be account");
+void arbitration::dismissarb(name arb, bool remove_from_cases)
+{
+	require_auth("eosio"_n);
+	check(is_account(arb), "arb must be account");
 
-		arbitrators_table arbitrators(get_self(), get_self().value);
+	arbitrators_table arbitrators(get_self(), get_self().value);
 
-		const auto& to_dismiss = arbitrators.get(arb.value, "arbitrator not found");
+	const auto& to_dismiss = arbitrators.get(arb.value, "arbitrator not found");
 
-		check(to_dismiss.arb_status != SEAT_EXPIRED && to_dismiss.arb_status != REMOVED, 
-			"arbitrator is already removed or their seat has expired");
+	check(to_dismiss.arb_status != SEAT_EXPIRED && to_dismiss.arb_status != REMOVED, 
+		"arbitrator is already removed or their seat has expired");
+
+	arbitrators.modify(to_dismiss, same_payer, [&](auto& a) {
+		a.arb_status = REMOVED;
+	});
+
+	auto perms = get_arb_permissions();
+	set_permissions(perms);
+
+	if(remove_from_cases) {
+		casefiles_table casefiles(get_self(), get_self().value);
+
+		for(const auto &id: to_dismiss.open_case_ids) {
+			auto cf_it = casefiles.find(id);
+
+			if (cf_it != casefiles.end()) {
+				auto case_arbs = cf_it->arbitrators;
+				auto arb_it = find(case_arbs.begin(), case_arbs.end(), to_dismiss.arb);
+
+				if (arb_it != case_arbs.end() && cf_it->case_status < RESOLVED) {
+					case_arbs.erase(arb_it);
+					casefiles.modify(cf_it, same_payer, [&](auto &row) {
+						row.arbitrators = case_arbs;
+					});
+				}
+			}
+		}
+
+		auto open_ids = to_dismiss.open_case_ids;
+		open_ids.clear();
 
 		arbitrators.modify(to_dismiss, same_payer, [&](auto& a) {
 			a.arb_status = REMOVED;
+			a.open_case_ids = open_ids;
 		});
-
-		auto perms = get_arb_permissions();
-		set_permissions(perms);
-
-		if(remove_from_cases) {
-			casefiles_table casefiles(get_self(), get_self().value);
-
-			for(const auto &id: to_dismiss.open_case_ids) {
-				auto cf_it = casefiles.find(id);
-
-				if (cf_it != casefiles.end()) {
-					auto case_arbs = cf_it->arbitrators;
-					auto arb_it = find(case_arbs.begin(), case_arbs.end(), to_dismiss.arb);
-
-					if (arb_it != case_arbs.end() && cf_it->case_status < RESOLVED) {
-						case_arbs.erase(arb_it);
-						casefiles.modify(cf_it, same_payer, [&](auto &row) {
-							row.arbitrators = case_arbs;
-						});
-					}
-				}
-			}
-
-			auto open_ids = to_dismiss.open_case_ids;
-			open_ids.clear();
-
-			arbitrators.modify(to_dismiss, same_payer, [&](auto& a) {
-				a.arb_status = REMOVED;
-				a.open_case_ids = open_ids;
-			});
-		}
 	}
+}
 #pragma endregion BP_Multisig_Actions
 
 #pragma region Helpers
@@ -981,45 +926,24 @@ void arbitration::del_claim(uint64_t claim_id) {
 	claims.erase(claim);
 }
 
-// void arbitration::transfer_handler(name from, name to, asset quantity, string memo)
-// {
-// 	require_auth(from);
+void arbitration::transfer_handler(name from, name to, asset quantity, string memo)
+{
+	require_auth(from);
 
-// 	check(quantity.is_valid(), "Invalid quantity");
-// 	check(quantity.symbol == symbol("TLOS", 4), "only TLOS tokens are accepted by this contract");
+	check(quantity.is_valid(), "Invalid quantity");
+	check(quantity.symbol == symbol("TLOS", 4), "only TLOS tokens are accepted by this contract");
 
-// 	if (from == get_self())
-// 		return;
+	if (from == get_self())
+		return;
 
-// 	check(to == get_self(), "to must be self");
+	check(to == get_self(), "to must be self");
 
-// 	accounts_table accounts(get_self(), from.value);
-// 	const auto &from_bal = accounts.find(quantity.symbol.code().raw());
+	accounts_table accounts(get_self(), from.value);
+	const auto &from_bal = accounts.find(quantity.symbol.code().raw());
 
-// 	add_balance(from, quantity, get_self());
+	add_balance(from, quantity, get_self());
 
-// 	print("\nDeposit Complete");
-// }
-
-name arbitration::get_next_ballot_id() {
-	uint64_t ballot_id = _config.current_ballot_id;
-	string prefix = "arb.";
-	name ballot_name;
-
-	ballots_table ballots(name("telos.decide"), name("telos.decide").value);
-	// Check 500 ballots ahead
-	for (size_t i = ballot_id; i < ballot_id + 500; ++i) {
-		string ballot_syntax = prefix + std::to_string(i);
-		ballot_name = name(ballot_syntax);
-		auto bal = ballots.find(ballot_name.value);
-		if (bal == ballots.end()) {
-			return ballot_name;
-		}
-	}
-
-	check(false, "couldn't secure a ballot_id");
-	// silence the compiler
-	return name();
+	print("\nDeposit Complete");
 }
 
 #pragma endregion Helpers

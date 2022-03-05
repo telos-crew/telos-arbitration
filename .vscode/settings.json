@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"locale": "cpp",
+		"typeinfo": "cpp",
+		"string": "cpp",
+		"iosfwd": "cpp"
+	}
+}

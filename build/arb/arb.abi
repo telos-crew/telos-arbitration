@@ -1,0 +1,331 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.1",
+    "types": [],
+    "structs": [
+        {
+            "name": "addcand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "candidate",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "board_member",
+            "base": "",
+            "fields": [
+                {
+                    "name": "member",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "board_nominee",
+            "base": "",
+            "fields": [
+                {
+                    "name": "nominee",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "config",
+            "base": "",
+            "fields": [
+                {
+                    "name": "publisher",
+                    "type": "name"
+                },
+                {
+                    "name": "max_board_seats",
+                    "type": "uint8"
+                },
+                {
+                    "name": "open_seats",
+                    "type": "uint8"
+                },
+                {
+                    "name": "open_election_id",
+                    "type": "name"
+                },
+                {
+                    "name": "holder_quorum_divisor",
+                    "type": "uint32"
+                },
+                {
+                    "name": "board_quorum_divisor",
+                    "type": "uint32"
+                },
+                {
+                    "name": "issue_duration",
+                    "type": "uint32"
+                },
+                {
+                    "name": "start_delay",
+                    "type": "uint32"
+                },
+                {
+                    "name": "leaderboard_duration",
+                    "type": "uint32"
+                },
+                {
+                    "name": "election_frequency",
+                    "type": "uint32"
+                },
+                {
+                    "name": "last_board_election_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "active_election_min_start_time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "is_active_election",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "endelect",
+            "base": "",
+            "fields": [
+                {
+                    "name": "holder",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "makeelection",
+            "base": "",
+            "fields": [
+                {
+                    "name": "holder",
+                    "type": "name"
+                },
+                {
+                    "name": "description",
+                    "type": "string"
+                },
+                {
+                    "name": "content",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "nominate",
+            "base": "",
+            "fields": [
+                {
+                    "name": "nominee",
+                    "type": "name"
+                },
+                {
+                    "name": "nominator",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "removecand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "candidate",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "removemember",
+            "base": "",
+            "fields": [
+                {
+                    "name": "member_to_remove",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "resign",
+            "base": "",
+            "fields": [
+                {
+                    "name": "member",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "setconfig",
+            "base": "",
+            "fields": [{
+                "name": "max_elected_arbs",
+                "type": "uint16"
+                },{
+                "name": "election_duration",
+                "type": "uint32"
+                },{
+                "name": "start_election",
+                "type": "uint32"
+                },{
+                "name": "arbitrator_term_length",
+                "type": "uint32"
+                },{
+                "name": "fees",
+                "type": "int64[]"
+                }
+            ]
+            },
+        {
+            "name": "startelect",
+            "base": "",
+            "fields": [
+                {
+                    "name": "holder",
+                    "type": "name"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "addcand",
+            "type": "addcand",
+            "ricardian_contract": "This human-language contract for the `telos.tfvt` action `addcand()` is legally binding and can be used in the event of a dispute. Disputes shall be settled through arbitration by Telos Elected Arbitrators as described in the Telos Blockchain Network Operating Agreement and the Telos Blockchain Network Arbitration Rules and Procedures.\n\n### Parameters\n\n* **candidate** (name of the account for the nominee being added to the election)\n\n* **info_link** (a link to the nominee's campaign information)\n\n### Intent\n\nThe intention of the authors and the invoker of this contract is to add a nominee to the list of candidates on an existing leaderboard-type election in Trail, prior to the start of voting. It shall have no other effect.\n\n### Body\n\nI attest that I am the owner or authorized user of this account {{holder}} and that I intend to add the candidate who owns the account {{candidate}} to a leaderboard-type election with a campaign information page at this link: {{info_link}}, in accordance with the Telos Foundation Charter."
+        },
+        {
+            "name": "endelect",
+            "type": "endelect",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "makeelection",
+            "type": "makeelection",
+            "ricardian_contract": "This human-language contract for the `telos.tfvt` action `makeelection()` is legally binding and can be used in the event of a dispute. Disputes shall be settled through arbitration by Telos Elected Arbitrators as described in the Telos Blockchain Network Operating Agreement and the Telos Blockchain Network Arbitration Rules and Procedures.\n\n### Parameters\n\n* **holder** (account making the leaderboard-type election)\n\n* **info_url** (info link for the campaign)\n\n### Intent\n\nThe intention of the authors and the invoker of this contract is to create a leaderboard-type election on the Trail Service to elect Telos Foundation board members through TFVT voting. It shall have no other effect.\n\n### Body\n\nI attest that I am the owner or authorized user of this account {{holder}} and that I intend to  create a leaderboard-type election with a link to campaign information here: {{info_url}} on the Trail Service to elect Telos Foundation board members through TFVT voting, in accordance with the Telos Foundation Charter."
+        },
+        {
+            "name": "nominate",
+            "type": "nominate",
+            "ricardian_contract": "This human-language contract for the `telos.tfvt` action `nominate()` is legally binding and can be used in the event of a dispute. Disputes shall be settled through arbitration by Telos Elected Arbitrators as described in the Telos Blockchain Network Operating Agreement and the Telos Blockchain Network Arbitration Rules and Procedures.\n\n### Parameters\n\n* **nominee** (account name of the account-holder being nominated)\n\n* **nominator** (account name of the account-holder who is nominating -  account must contain a TFVT or TFBOARD token)\n\n### Intent\n\nThe intention of the authors and the invoker of this contract is to nominate an accountholder to stand for election as a Telos Foundation board member. It shall have no other effect.\n\n### Body\n\nI attest that I am the owner or authorized user of this account {{nominator}} and that I intend to nominate the owner of the account: {{nominee}} to stand for election as a Telos Foundation board member in accordance with the Telos Foundation Charter."
+        },
+        {
+            "name": "removecand",
+            "type": "removecand",
+            "ricardian_contract": "This human-language contract for the `telos.tfvt` action `removecand()` is legally binding and can be used in the event of a dispute. Disputes shall be settled through arbitration by Telos Elected Arbitrators as described in the Telos Blockchain Network Operating Agreement and the Telos Blockchain Network Arbitration Rules and Procedures.\n\n### Parameters\n\n* **candidate** (name of the account for the nominee being removed from the election)\n\n### Intent\n\nThe intention of the authors and the invoker of this contract is to remove a nominee from the list of candidates on an existing leaderboard-type election in the Trail Service, prior to the start of voting. It shall have no other effect.\n\n### Body\n\nI attest that I am the owner or authorized user of this account {{holder}} and that I intend to  remove the candidate who owns the account {{candidate}} from a leaderboard-type election, in accordance with the Telos Foundation Charter."
+        },
+        {
+            "name": "removemember",
+            "type": "removemember",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "resign",
+            "type": "resign",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setconfig",
+            "type": "setconfig",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "startelect",
+            "type": "startelect",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "boardmembers",
+            "type": "board_member",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "config",
+            "type": "config",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "nominees",
+            "type": "board_nominee",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [
+        {
+            "id": "Intent",
+            "body": "The intention of the authors and invoker of this smart contract is to manage voting functions for the Telos Foundation, including creating and closing issues to be voted which end in some form of transaction if sucessful, and creating leaderboard-type elections for Telos Foundation board members. \n\nThis smart contract is intended to manage nominating an accountholder to stand for election, creating the election, adding and removing candidates prior to the start of voting, and to close out the election when voting has concluded. \n\nFinally, this smart contract is intended to allow a multi-sig group of Telos Foundation board members whose numbers satisfy the `major` permission of the `tf` account to remove a current board member from office. \n\nAll actions of this smart contract are governed by the Telos Blockchain Network Core Governance Documents referenced below and inherits the defined terms of those documents. Any person invoking this contract accepts these documents as binding agreements in all matters related to the use or recording of information on the Telos Blockchain Network.\n\n**The \"Telos Blockchain Network Core Governance Documents\" are comprised of:**\n\n* [Telos Blockchain Network Operating Agreement](https://web.ipfs.telosfoundation.io/Qmexc2Uejr2f5f8bCQxTkt5CfTAC9szXLpG6mu6No7pmVs)\n\n* [Telos Blockchain Network Arbitration Rules and Procedures](https://web.ipfs.telosfoundation.io/QmWZEpPcudrAmQ9tzi8rCpdqAFfVjuAKc6vkpMRRa2hXsz) \n\n* [Telos Regproducer contract](https://web.ipfs.telosfoundation.io/QmSwzSPZf2xpvjKV6qWRodAVD8uYZpKZ1WfzTEA825RjfR) \n\n* [Telos Regarb contract](https://web.ipfs.telosfoundation.io/QmWXmx9KAZZ6dcxT67Ap4WHivfJ5s1nFgMFXpHyriCkNCR) \n\n* [Telos Block Producer Minimum Requirements](https://web.ipfs.telosfoundation.io/QmUvx45rtKr3H4SYf3Kei7AjEPEfKvxspBV4AXAEqWsyXU) \n\n* [Telos Arbitrator Minimum Requirements](https://web.ipfs.telosfoundation.io/QmfW8UGVUKLVsacy58eTmFLqLMaT1STxaycJFnCpNfhV82) \n\n* [Telos Blockchain Network Data Protection Policy](https://web.ipfs.telosfoundation.io/QmeYV6f4B5S2z3CycASNVHSLtMzcJzWRyam4Q1WzFAtsLe) \n\n**Translations:**\n\n* [TBNOA - Chinese language version](https://web.ipfs.telosfoundation.io/QmTWZG5moSZbH63Hk5oH4KRYshMDwH7kjyktqHa65jZUvA) \n\n* [TBNOA - Korean language version](https://web.ipfs.telosfoundation.io/QmVGMcfWsGqFi9TR1QEk6W8thRY4f9et9nX8WJLXQvWtqb)"
+        },
+        {
+            "id": "Term",
+            "body": "This Contract expires at the conclusion of code execution."
+        },
+        {
+            "id": "Warranty",
+            "body": "{{ name }} shall uphold its Obligations under this Contract in a timely and workmanlike manner, using knowledge and recommendations for performing the services which meet generally acceptable standards set forth by Telos Blockchain Network Block Producers."
+        },
+        {
+            "id": "Default",
+            "body": "The occurrence of any of the following shall constitute a material default under this Contract:"
+        },
+        {
+            "id": "Remedies",
+            "body": "In addition to any and all other rights a party may have available according to law, if a party defaults by failing to substantially perform any provision, term or condition of this Contract, the other party may terminate the Contract by providing written notice to the defaulting party. This notice shall describe with sufficient detail the nature of the default. The party receiving such notice shall promptly be removed from being a Block Producer and this Contract shall be automatically terminated.\""
+        },
+        {
+            "id": "Force Majeure",
+            "body": "If performance of this Contract or any obligation under this Contract is prevented, restricted, or interfered with by causes beyond either party's reasonable control (\\\"Force Majeure\\\"), and if the party unable to carry out its obligations gives the other party prompt written notice of such event, then the obligations of the party invoking this provision shall be suspended to the extent necessary by such event. The term Force Majeure shall include, without limitation, acts of God, fire, explosion, vandalism, storm or other similar occurrence, orders or acts of military or civil authority, or by national emergencies, insurrections, riots, or wars, or strikes, lock-outs, work stoppages, or supplier failures. The excused party shall use reasonable efforts under the circumstances to avoid or remove such causes of non-performance and shall proceed to perform with reasonable dispatch whenever such causes are removed or ceased. An act or omission shall be deemed within the reasonable control of a party if committed, omitted, or caused by such party, or its employees, officers, agents, or affiliates.\""
+        },
+        {
+            "id": "Dispute Resolution",
+            "body": "Any controversies or disputes arising out of or relating to this Contract will be resolved by binding arbitration under Telos Blockchain Network Arbitration Rules and Procedures. The arbitrator's award will be final.\""
+        },
+        {
+            "id": "Entire Agreement",
+            "body": "This Contract contains the entire agreement of the parties, and there are no other promises or conditions in any other agreement whether oral or written concerning the subject matter of this Contract. This Contract supersedes any prior written or oral agreements between the parties, except for the Telos Blockchain Network Core Governance Documents\""
+        },
+        {
+            "id": "Severability",
+            "body": "If any provision of this Contract will be held to be invalid or unenforceable for any reason, the remaining provisions will continue to be valid and enforceable. If a court finds that any provision of this Contract is invalid or unenforceable, but that by limiting such provision it would become valid and enforceable, then such provision will be deemed to be written, construed, and enforced as so limited.\""
+        },
+        {
+            "id": "Governing Law",
+            "body": "This Contract shall be construed in accordance with the Telos Blockchain Network Core Governance Documents, previously referenced."
+        },
+        {
+            "id": "Notice",
+            "body": "Any notice or communication required or permitted under this Contract shall be sufficiently given if delivered to a verifiable email address or to such other email address as one party may have publicly furnished in writing, or published on a broadcast contract provided by this blockchain for purposes of providing notices of this type."
+        },
+        {
+            "id": "Waiver of Contractual Right",
+            "body": "The failure of either party to enforce any provision of this Contract shall not be construed as a waiver or limitation of that party's right to subsequently enforce and compel strict compliance with every provision of this Contract."
+        },
+        {
+            "id": "Arbitrator's Fees to Prevailing Party",
+            "body": "In any action arising hereunder or any separate action pertaining to the validity of this Agreement, both sides shall pay half the initial cost of arbitration, and the prevailing party shall be awarded reasonable arbitrator's fees and costs."
+        },
+        {
+            "id": "Construction and Interpretation",
+            "body": "The rule requiring construction or interpretation against the drafter is waived. The document shall be deemed as if it were drafted by both parties in a mutual effort.\""
+        },
+        {
+            "id": "In Witness Whereof",
+            "body": "IN WITNESS WHEREOF, the parties hereto have caused this Agreement to be executed by themselves or their duly authorized representatives as of the date of execution, and authorized as proven by the cryptographic signature on the transaction that invokes this contract."
+        }
+    ],
+    "variants": []
+}

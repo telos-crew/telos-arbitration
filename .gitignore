@@ -32,7 +32,6 @@
 *.app
 
 # Dev
-build/
 .DS_Store
 
 # Tests
