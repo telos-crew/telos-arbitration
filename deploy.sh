@@ -7,19 +7,8 @@ contract=arb
 account=testarb11112
 
 #network
-if [[ "$1" == "mainnet" ]]; then 
-    url=http://telos.caleos.io
-    network="Telos Mainnet"
-elif [[ "$1" == "testnet" ]]; then
-    url=https://testnet.telos.caleos.io
-    network="Telos Testnet"
-elif [[ "$1" == "local" ]]; then
-    url=http://127.0.0.1:8888
-    network="Local"
-else
-    echo "need network"
-    exit 0
-fi
+url=https://testnet.telos.caleos.io
+network="Telos Testnet"
 
 echo ">>> Deploying $contract contract to $account on $network..."
 

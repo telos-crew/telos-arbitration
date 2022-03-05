@@ -112,8 +112,8 @@ class[[eosio::contract("testarb11112")]] arbitration : public eosio::contract
 	[[eosio::action]]
 	void setconfig(uint16_t max_elected_arbs, uint32_t election_duration, uint32_t start_election, uint32_t arbitrator_term_length, vector<int64_t> fees);
 
-	// [[eosio::action]] 
-	// void initelection();
+	[[eosio::action]] 
+	void initelection();
 
 	[[eosio::action]] // DRAFTELECT
 	void draftelect();
@@ -138,7 +138,7 @@ class[[eosio::contract("testarb11112")]] arbitration : public eosio::contract
 
 #pragma region Case_Setup
 
-	// [[eosio::action]] void withdrawfund(name owner);
+	[[eosio::action]] void withdrawfund(name owner);
 
 	//NOTE: filing a case doesn't require a respondent
 	[[eosio::action]] void filecase(name claimant, string claim_link, vector<uint8_t> lang_codes,
@@ -445,7 +445,7 @@ class[[eosio::contract("testarb11112")]] arbitration : public eosio::contract
 	void del_claim_at(const string claim_hash, vector<claim> claims);
 
 	// [[eosio::on_notify("eosio.token::transfer")]]
-	// void transfer_handler(name from, name to, asset quantity, string memo);
+	void transfer_handler(name from, name to, asset quantity, string memo);
 
 	void sub_balance(name owner, asset value)
 	{

@@ -41,46 +41,22 @@ ACTION arbitration::setconfig(uint16_t max_elected_arbs, uint32_t election_durat
 
 #pragma region Arb_Elections
 
-// void arbitration::initelection()
-// {
-// 	// require_auth("eosio"_n);
-// 	check(!_config.auto_start_election, "Election is on auto start mode.");
-
-// 	ballots_table ballots(name("telos.decide"), name("telos.decide").value);
-// 	_config.current_ballot_id = ballots.available_primary_key();
-// 	_config.auto_start_election = true;
-
-// 	arbitrators_table arbitrators(get_self(), get_self().value);
-
-// 	uint8_t available_seats = 0;
-// 	if (has_available_seats(arbitrators, available_seats))
-// 	{
-// 		start_new_election(available_seats);
-// 	}
-// }
-
-void arbitration::start_new_election(uint8_t available_seats)
+void arbitration::initelection()
 {
-	uint32_t begin_time = current_time_point().sec_since_epoch() + _config.election_start;
-	uint32_t end_time = begin_time + _config.election_duration;
+	// require_auth("eosio"_n);
+	check(!_config.auto_start_election, "Election is on auto start mode.");
 
-	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "regballot"_n,
-		   make_tuple(get_self(),		 	// publisher
-					  uint8_t(2),		 	// ballot_type (2 == leaderboard)
-					  symbol("VOTE", 4), 	// voting_symbol
-					  begin_time,		 	// begin_time
-					  end_time,			 	// end_time
-					  std::string("")		// info_url
-					  ))
-		.send();
+	ballots_table ballots(name("telos.decide"), name("telos.decide").value);
+	_config.current_ballot_id = ballots.available_primary_key();
+	_config.auto_start_election = true;
 
-	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "setseats"_n,
-		   make_tuple(get_self(),
-					  _config.current_ballot_id,
-					  available_seats))
-		.send();
+	arbitrators_table arbitrators(get_self(), get_self().value);
 
-	print("\nNew election has started.");
+	uint8_t available_seats = 0;
+	if (has_available_seats(arbitrators, available_seats))
+	{
+		draftelect();
+	}
 }
 
 void arbitration::draftelect()
@@ -118,25 +94,28 @@ void arbitration::draftelect()
 		uint8_t(1), // min
 		uint8_t(_config.max_elected_arbs) // max
 	)).send();
+}
 
-	// uint32_t begin_time = current_time_point().sec_since_epoch() + _config.election_start;
-	// uint32_t end_time = begin_time + _config.election_duration;
+void arbitration::start_new_election(uint8_t available_seats)
+{
+	uint32_t begin_time = current_time_point().sec_since_epoch() + _config.election_start;
+	uint32_t end_time = begin_time + _config.election_duration;
 
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "regballot"_n,
-	// 	   make_tuple(get_self(),		 	// publisher
-	// 				  uint8_t(2),		 	// ballot_type (2 == leaderboard)
-	// 				  symbol("VOTE", 4), 	// voting_symbol
-	// 				  begin_time,		 	// begin_time
-	// 				  end_time,			 	// end_time
-	// 				  std::string("")		// info_url
-	// 				  ))
-	// 	.send();
+	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "regballot"_n,
+		   make_tuple(get_self(),		 	// publisher
+					  uint8_t(2),		 	// ballot_type (2 == leaderboard)
+					  symbol("VOTE", 4), 	// voting_symbol
+					  begin_time,		 	// begin_time
+					  end_time,			 	// end_time
+					  std::string("")		// info_url
+					  ))
+		.send();
 
-	// action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "setseats"_n,
-	// 	   make_tuple(get_self(),
-	// 				  _config.current_ballot_id,
-	// 				  available_seats))
-	// 	.send();
+	action(permission_level{get_self(), "active"_n}, "eosio.trail"_n, "setseats"_n,
+		   make_tuple(get_self(),
+					  _config.current_ballot_id,
+					  available_seats))
+		.send();
 
 	print("\nNew election has started.");
 }
@@ -364,22 +343,22 @@ void arbitration::endelection(name nominee) //NOTE: required eosio.arb@eosio.cod
 #pragma endregion Arb_Elections
 
 #pragma region Case_Setup
-// void arbitration::withdrawfund(name owner) //NOTE: requires eosio.arb@eosio.code
-// {
-// 	require_auth(owner);
+void arbitration::withdrawfund(name owner) //NOTE: requires eosio.arb@eosio.code
+{
+	require_auth(owner);
 
-// 	accounts_table accounts(get_self(), owner.value);
-// 	const auto &bal = accounts.get(native_sym.code().raw(), "balance does not exist");
+	accounts_table accounts(get_self(), owner.value);
+	const auto &bal = accounts.get(native_sym.code().raw(), "balance does not exist");
 
-// 	action(permission_level{get_self(), "active"_n}, "eosio.token"_n, "transfer"_n,
-// 		   make_tuple(get_self(),
-// 					  owner,
-// 					  bal.balance,
-// 					  std::string("eosio.arb withdrawfund")))
-// 		.send();
+	action(permission_level{get_self(), "active"_n}, "eosio.token"_n, "transfer"_n,
+		   make_tuple(get_self(),
+					  owner,
+					  bal.balance,
+					  std::string("eosio.arb withdrawfund")))
+		.send();
 
-// 	accounts.erase(bal);
-// }
+	accounts.erase(bal);
+}
 
 //QUESTION: Does cleos/teclos still not support optional serialization?
 void arbitration::filecase(name claimant, string claim_link, vector<uint8_t> lang_codes, std::optional<name> respondant)
@@ -981,25 +960,25 @@ void arbitration::del_claim(uint64_t claim_id) {
 	claims.erase(claim);
 }
 
-// void arbitration::transfer_handler(name from, name to, asset quantity, string memo)
-// {
-// 	require_auth(from);
+void arbitration::transfer_handler(name from, name to, asset quantity, string memo)
+{
+	require_auth(from);
 
-// 	check(quantity.is_valid(), "Invalid quantity");
-// 	check(quantity.symbol == symbol("TLOS", 4), "only TLOS tokens are accepted by this contract");
+	check(quantity.is_valid(), "Invalid quantity");
+	check(quantity.symbol == symbol("TLOS", 4), "only TLOS tokens are accepted by this contract");
 
-// 	if (from == get_self())
-// 		return;
+	if (from == get_self())
+		return;
 
-// 	check(to == get_self(), "to must be self");
+	check(to == get_self(), "to must be self");
 
-// 	accounts_table accounts(get_self(), from.value);
-// 	const auto &from_bal = accounts.find(quantity.symbol.code().raw());
+	accounts_table accounts(get_self(), from.value);
+	const auto &from_bal = accounts.find(quantity.symbol.code().raw());
 
-// 	add_balance(from, quantity, get_self());
+	add_balance(from, quantity, get_self());
 
-// 	print("\nDeposit Complete");
-// }
+	print("\nDeposit Complete");
+}
 
 name arbitration::get_next_ballot_id() {
 	uint64_t ballot_id = _config.current_ballot_id;
